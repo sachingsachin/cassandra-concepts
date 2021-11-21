@@ -83,6 +83,16 @@ Level 0 is where mem-tables are flushed into disk. At this level, STCS is used.
 As soon as level 0 contains 1 SCTS-compacted SS-Table of size greater than 160 MB, that big SS-Table is taken and merged with all the 10 SS-Tables of level 1.
 The resulting data at level 1 is then split again into smaller SS-Tables at level 1, while keeping each SS-Table less than 160 MB.
 
+The splitting into smaller SS-tables is such that the resulting SS-Tables are non-overlapping with clearly defined token ranges.
+Hence each table roughly stores 10% of the token ranges.
+
+SSTables at level 2 are 100 - so each of them holds roughly 1% of token ranges.
+But that is the beauty of LCS.
+This kind of sorted-splitting ensures that roughly each SSTable at level X corresponds to about 10 SSTables at level X+1
+And whenever you merge an SSTable from level X to X+1, you are only merging 11-12 SSTables.
+Also, merges at higher levels are on increasingly smaller token ranges and hence complete very fast.
+
+
 
 ### Time Window Compaction Stratgey (TWCS)
 This strategy is useful for time-series data (Time-series data is the one where timestamp is used as part of the clustering key).
