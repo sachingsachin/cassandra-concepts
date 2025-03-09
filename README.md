@@ -19,7 +19,7 @@ Example: we can have `days` and `hours` as the clustering keys for an `orders` t
 3. Get orders for X day between Hour Y and Hour Z
 
 
-## Distribution of data across nodes
+## Distribution of data across nodes via vnodes
 
 Output of a hash function is a number (integer or long).
 In traditional distributed systems, each node is responsible for a contiguous range of this hash function's output.  
@@ -55,6 +55,21 @@ At the same time, the distribution of data can be changed one node at a time.
 If the vnode concept was not available, then the only option would be to split the token-range into half or one-Nth on each node, making it impossible to incrementally add a node to the cluster.
 
 https://www.datastax.com/blog/virtual-nodes-cassandra-12 provides some more informtation on the same.
+
+
+
+## Consistent Hashing
+
+The above is an implementation of [consistent hashing](https://www.toptal.com/big-data/consistent-hashing).  
+Idea behind consistent hashing is to keep the hashing of keys constant even though servers are added or reduced from the distributed hashing. Example:  
+
+If we were to just distribute keys naively as:  
+$~~~~~~~~~~~$ server = hash(key) / N  
+where `N` is the number of servers.  
+
+In this scheme, whenever number of servers `N` changes, the server for each key would change completely and that would result in a lot of data migration from one server to another. To prevent this, the hash(key) is not mapped to server but to a virtual server number (basically same as vnode). Then every server randomly picks equal number of these vnodes (more or less) and whenever N changes, all other servers reduce or increase their vnodes accordingly. Beauty of this solution is that most vnodes do not leave their current server and load of moving some vnodes is equally spread on all servers.  
+
+
 
 
 ## Compaction Strategies
