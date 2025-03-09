@@ -70,6 +70,11 @@ where `N` is the number of servers.
 In this scheme, whenever number of servers `N` changes, the server for each key would change completely and that would result in a lot of data migration from one server to another. To prevent this, the hash(key) is not mapped to server but to a virtual server number (basically same as vnode). Then every server randomly picks equal number of these vnodes (more or less) and whenever N changes, all other servers reduce or increase their vnodes accordingly. Beauty of this solution is that most vnodes do not leave their current server and load of moving some vnodes is equally spread on all servers.  
 
 
+## Masterless architecture
+
+[Reference](https://cassandra.apache.org/_/cassandra-basics.html)  
+Cassandra has a masterless architecture – any node in the database can provide the exact same functionality as any other node – contributing to Cassandra’s robustness and resilience.  
+The node that gets the request at any particular moment is called a coordinator. Any node can act as the coordinator. The coordinator node does the hashing on the key to find the right destinaton for the read/write operation. In addition it also waits for X number of replicas to respond positively where X is the consistency chosen for that query. The consitency can be in write operation or read operation. To avoid stale reads at any point, its recommended to have write-consistency + read-consistency > replication factor of the data.
 
 
 ## Compaction Strategies
@@ -120,3 +125,14 @@ When this happens, compaction is just removing the older SS-Tables - much much f
 ### 
 
 Read more [here](https://docs.datastax.com/en/dse/5.1/dse-arch/datastax_enterprise/dbInternals/dbIntHowDataMaintain.html#dbIntHowDataMaintain__dml_types_of_compaction)
+
+## Snitch
+
+[Snitch](https://cassandra.apache.org/doc/stable/cassandra/architecture/snitch.html) is used in Cassandra to know about the nodes regions and availability zones. Region in Cassandra is called datacenter and availability zone is called a rack. This knowledge is essential for Cassandra to provide different kinds of tunable consistencies.
+
+
+## Gossip
+
+[Gossip](https://docs.datastax.com/en/cassandra-oss/3.x/cassandra/architecture/archGossipAbout.html) is a protocl for Cassandra nodes to share state with one another. Every second, each Cassandra node communicates its state to randomly picked 3 other nodes. The states have versions associated with them as well so that older states are easier to overwrite while any stale state is ignored if communicated accidentally.
+
+
