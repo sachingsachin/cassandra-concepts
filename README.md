@@ -31,27 +31,39 @@ If there are 5 nodes in the cluster, then a simple way is to divide it is as con
 4. Node 4: 61 to 80
 5. Node 5: 81 to 100
 
-However, this is inflexible from adding/removing nodes perspective.
+However, this is inflexible from adding/removing nodes perspective because any change of node count changes the hash-distribution among nodes in a very big way. Below is an example of taking away one node:
 
-So an easier way is to divide the above 0 to 100 range into say 20 vnodes such that each v-node is resposible for a range of 5.
+1. Node 1: 1 to 25
+2. Node 2: 26 to 50
+3. Node 3: 51 to 75
+4. Node 4: 76 to 100
+
+
+So an easier way is to divide the above 0 to 100 hash-output range into say 20 vnodes such that each v-node is resposible for a range of 5.  
 These vnodes can then be easily assigned to any node. We need not assign contiguous hash function ranges to a physical node.
 Rather we can assgin vnodes to each node and they can be discontiguous.
+
+Earlier, we had each node handled keys whose hash fell between X<sub>n</sub> and Y<sub>n</sub>.  
+Where as in the vnodes model, each node handles K vnodes where each vnode handles keys whose hash falls between X<sub>n</sub> and Y<sub>n</sub>.  
+
 Example:
-For a hash function that outputs a number from 1 to 100 and a cluster of 5 nodes, we can have 20 vnodes.
-With this, the distribution can look as follows:
+For a hash function that outputs a number from 1 to 100, we could have 20 vnodes such that:
+1. vnode1: 1 to 5
+2. vnode2: 6 to 10
+3. ...
+4. vnode20: 96 to 100
+
+And the distribution of vnodes among 5 physical nodes can look like:
 1. Node 1: vn1, vn7, vn8, vn20
 2. Node 2: vn2, vn3, vn10, vn19
 3. And so on
 
 Note that we have 20 vnodes/5 nodes = 4 vnodes / node
-And 100 / 20 vnodes = 5 contiguous range of hash-function output.
 
 So each node now is responsible for small contiguous ranges each of which is called a vnode.
 But the overall responsibility of each node is now no longer contiguous.
 
-When a new node is added, each of the existing node can now give a few of their vnodes to the new node so that data distribution is spread equally.
-Since each node gives a little bit of its data, the bootstrapping load is equal on each node.
-At the same time, the distribution of data can be changed one node at a time.
+When a new node is added, each of the existing node can now give a few of their vnodes to the new node so that data distribution is spread equally. Since each node gives a little bit of its data, the bootstrapping load is equal on each node. At the same time, the distribution of data can be changed one node at a time.
 If the vnode concept was not available, then the only option would be to split the token-range into half or one-Nth on each node, making it impossible to incrementally add a node to the cluster.
 
 https://www.datastax.com/blog/virtual-nodes-cassandra-12 provides some more informtation on the same.
