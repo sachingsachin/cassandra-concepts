@@ -19,6 +19,17 @@ Example: we can have `days` and `hours` as the clustering keys for an `orders` t
 3. Get orders for X day between Hour Y and Hour Z
 
 
+## Querying with and without keys in Cassandra
+
+Cassandra does not allow querying without all its partitioning keys because without that, it will not be able to zero-in to a particular node.  
+Only 2 cases where it does allow querying without specifying all its partitioning keys are:
+
+1. `ALLOW FILTERING`: Queries that filter on non-primary key columns without a secondary index must use ALLOW FILTERING. Cassandra executes this by scanning potentially multiple partitions or even every node in the cluster and then filtering the results. This is an anti-pattern that can overwhelm a cluster.
+
+2. Queries solely on `Secondary Indexes` for high-cardinality data can also be a problem. If a secondary index query has to hit many partitions, it performs similar to a distributed table scan.
+
+
+
 ## Distribution of data across nodes via vnodes
 
 Output of a hash function is a number (integer or long).
